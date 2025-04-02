@@ -1,9 +1,6 @@
-pickle
 streamlit
-
-tensorflow
-requests
-streamlit_lottie
 pandas
 numpy
 scikit-learn
+seaborn
+matplotlib
