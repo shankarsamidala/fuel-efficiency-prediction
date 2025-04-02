@@ -18,36 +18,32 @@ st.markdown("""
 This comprehensive tool predicts the combined fuel consumption of vehicles based on an extensive range of features. Input your vehicle’s specifications below.
 """)
 
-# Display the first few rows of the dataset
-st.write("## Data Overview")
-st.dataframe(data.head())
+# Data Overview Section
+if st.expander("Data Overview", expanded=False):
+    st.dataframe(data.head())
 
-# Exploratory Data Analysis section
-st.write("## Exploratory Data Analysis")
-numeric_data = data.select_dtypes(include=[np.number])
-correlation_matrix = numeric_data.corr()
-plt.figure(figsize=(10, 8))
-sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', cbar=True)
-st.pyplot()
+# Exploratory Data Analysis Section
+if st.expander("Exploratory Data Analysis", expanded=False):
+    numeric_data = data.select_dtypes(include=[np.number])
+    correlation_matrix = numeric_data.corr()
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', cbar=True)
+    st.pyplot()
 
-# Prepare data for the model
-X = numeric_data.drop('Fuel Consumption(Comb (L/100 km))', axis=1)
+# Model Training and Evaluation Section
+model = LinearRegression()
+X = data.select_dtypes(include=[np.number]).drop('Fuel Consumption(Comb (L/100 km))', axis=1)
 y = data['Fuel Consumption(Comb (L/100 km))']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Train the model
-model = LinearRegression()
 model.fit(X_train, y_train)
-
-# Evaluate the model
 y_pred = model.predict(X_test)
 mse = mean_squared_error(y_test, y_pred)
-st.write("## Model Evaluation")
-st.write(f"Mean Squared Error: {mse:.2f}")
 
-# Predicting Fuel Consumption
-st.write("## Predict Fuel Consumption")
-with st.form("prediction_form"):
+if st.expander("Model Training and Evaluation", expanded=False):
+    st.write(f"Mean Squared Error of the model is: {mse:.2f}")
+
+# Prediction Section
+with st.expander("Predict Fuel Consumption", expanded=True):
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         engine_capacity = st.number_input("Engine Capacity (Liters)", value=2.0, step=0.1)
@@ -68,26 +64,26 @@ with st.form("prediction_form"):
     
     submit_button = st.form_submit_button("Submit")
 
-if submit_button:
-    input_data = pd.DataFrame({'Engine Size(L)': [engine_capacity], 'Cylinders': [number_of_cylinders], 'Year': [manufacturing_year], 'Weight(kg)': [vehicle_weight]})
-    # Set all other columns to 0
-    for col in X_train.columns:
-        if col not in input_data.columns:
-            input_data[col] = 0
+    if submit_button:
+        input_data = pd.DataFrame({'Engine Size(L)': [engine_capacity], 'Cylinders': [number_of_cylinders], 'Year': [manufacturing_year], 'Weight(kg)': [vehicle_weight]})
+        # Set all other columns to 0
+        for col in X_train.columns:
+            if col not in input_data.columns:
+                input_data[col] = 0
 
-    # Set selected options to 1
-    input_data[f'Transmission_{gear_type}'] = 1
-    input_data[f'Fuel Type_{fuel_variant}'] = 1
-    input_data[f'Vehicle Class_{car_class}'] = 1
-    # Assume the model could handle categorical data conversion for new features in the future
-    input_data[f'Drive Type_{drive_type}'] = 1
-    input_data[f'Emissions_{emissions_rating}'] = 1
-    input_data[f'Color_{color_preference}'] = 1
-    input_data[f'AC_{air_conditioning}'] = 1
-    input_data[f'Parking Sensors_{parking_sensors}'] = 1
+        # Set selected options to 1
+        input_data[f'Transmission_{gear_type}'] = 1
+        input_data[f'Fuel Type_{fuel_variant}'] = 1
+        input_data[f'Vehicle Class_{car_class}'] = 1
+        # Assume the model could handle categorical data conversion for new features in the future
+        input_data[f'Drive Type_{drive_type}'] = 1
+        input_data[f'Emissions_{emissions_rating}'] = 1
+        input_data[f'Color_{color_preference}'] = 1
+        input_data[f'AC_{air_conditioning}'] = 1
+        input_data[f'Parking Sensors_{parking_sensors}'] = 1
 
-    # Reorder columns to match training data
-    input_data = input_data[X_train.columns]
+        # Reorder columns to match training data
+        input_data = input_data[X_train.columns]
 
-    predicted_consumption = model.predict(input_data)
-    st.write(f"Predicted Fuel Consumption (Comb): {predicted_consumption[0]:.2f} L/100 km")
+        predicted_consumption = model.predict(input_data)
+        st.write(f"Predicted Fuel Consumption (Comb): {predicted_consumption[0]:.2f} L/100 km")
