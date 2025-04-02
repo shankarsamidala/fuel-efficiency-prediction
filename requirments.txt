@@ -1,6 +1,6 @@
 pickle
 streamlit
-scikit-learn==1.2.2
+scikit-learn
 tensorflow
 requests
 streamlit_lottie
