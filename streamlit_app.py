@@ -13,10 +13,9 @@ data = pd.read_csv(file_path)
 data = pd.get_dummies(data, columns=['Transmission', 'Fuel Type', 'Vehicle Class'], drop_first=True)
 
 # Streamlit UI setup
-st.title("Fuel Consumption Prediction App")
+st.title("Advanced Vehicle Fuel Consumption Predictor")
 st.markdown("""
-This app predicts the combined fuel consumption of vehicles based on various features such as engine size, number of cylinders, transmission type, fuel type, and vehicle class.
-Please enter the specifications of your vehicle to get predictions.
+This comprehensive tool predicts the combined fuel consumption of vehicles based on an extensive range of features. Input your vehicle’s specifications below.
 """)
 
 # Display the first few rows of the dataset
@@ -49,24 +48,43 @@ st.write(f"Mean Squared Error: {mse:.2f}")
 # Predicting Fuel Consumption
 st.write("## Predict Fuel Consumption")
 with st.form("prediction_form"):
-    engine_size = st.number_input("Engine Size (L)", value=2.0, step=0.1)
-    cylinders = st.number_input("Number of Cylinders", value=4, step=1)
-    transmission = st.selectbox("Transmission Type", options=['AM8', 'AS10', 'A8', 'A9', 'AM7', 'AS8', 'M6', 'AS6', 'AV', 'AS9', 'A10', 'A6', 'M5', 'M7', 'AV7', 'AV1', 'AM6', 'AS7', 'AV8', 'AV6', 'AV10', 'AS5', 'A7'])
-    fuel_type = st.selectbox("Fuel Type", options=['Z', 'X', 'D', 'E'])
-    vehicle_class = st.selectbox("Vehicle Class", options=['Compact', 'SUV: Small', 'Mid-size', 'Minicompact', 'SUV: Standard', 'Two-seater', 'Subcompact', 'Station wagon: Small', 'Station wagon: Mid-size', 'Full-size', 'Pickup truck: Small', 'Pickup truck: Standard', 'Minivan', 'Special purpose vehicle'])
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        engine_capacity = st.number_input("Engine Capacity (Liters)", value=2.0, step=0.1)
+        number_of_cylinders = st.number_input("Cylinders Count", value=4, step=1)
+        vehicle_weight = st.number_input("Vehicle Weight (kg)", min_value=800, max_value=4000, value=1500)
+    with col2:
+        gear_type = st.selectbox("Gearbox Type", options=['Automatic', 'Manual', 'Semi-Automatic', 'CVT', 'Dual-Clutch'])
+        fuel_variant = st.selectbox("Fuel Variant", options=['Petrol', 'Diesel', 'Electric', 'Hybrid'])
+        drive_type = st.selectbox("Drive Train", options=['FWD', 'RWD', 'AWD'])
+    with col3:
+        car_class = st.selectbox("Car Category", options=['Compact', 'SUV: Small', 'Mid-size', 'Minicompact', 'SUV: Standard', 'Two-seater', 'Subcompact', 'Station wagon: Small', 'Station wagon: Mid-size', 'Full-size', 'Pickup truck: Small', 'Pickup truck: Standard', 'Minivan', 'Special purpose vehicle'])
+        manufacturing_year = st.number_input("Manufacture Year", min_value=1990, max_value=2025, value=2021)
+        emissions_rating = st.selectbox("Emissions Rating", options=['Euro 3', 'Euro 4', 'Euro 5', 'Euro 6', 'Euro 6d'])
+    with col4:
+        color_preference = st.selectbox("Vehicle Color", options=['White', 'Black', 'Silver', 'Red', 'Blue', 'Green'])
+        air_conditioning = st.selectbox("Air Conditioning", options=['Yes', 'No'])
+        parking_sensors = st.selectbox("Parking Sensors", options=['Front', 'Rear', 'Both', 'None'])
     
     submit_button = st.form_submit_button("Submit")
 
 if submit_button:
-    input_data = pd.DataFrame({'Engine Size(L)': [engine_size], 'Cylinders': [cylinders]})
+    input_data = pd.DataFrame({'Engine Size(L)': [engine_capacity], 'Cylinders': [number_of_cylinders], 'Year': [manufacturing_year], 'Weight(kg)': [vehicle_weight]})
     # Set all other columns to 0
     for col in X_train.columns:
-        input_data[col] = 0
+        if col not in input_data.columns:
+            input_data[col] = 0
 
     # Set selected options to 1
-    input_data[f'Transmission_{transmission}'] = 1
-    input_data[f'Fuel Type_{fuel_type}'] = 1
-    input_data[f'Vehicle Class_{vehicle_class}'] = 1
+    input_data[f'Transmission_{gear_type}'] = 1
+    input_data[f'Fuel Type_{fuel_variant}'] = 1
+    input_data[f'Vehicle Class_{car_class}'] = 1
+    # Assume the model could handle categorical data conversion for new features in the future
+    input_data[f'Drive Type_{drive_type}'] = 1
+    input_data[f'Emissions_{emissions_rating}'] = 1
+    input_data[f'Color_{color_preference}'] = 1
+    input_data[f'AC_{air_conditioning}'] = 1
+    input_data[f'Parking Sensors_{parking_sensors}'] = 1
 
     # Reorder columns to match training data
     input_data = input_data[X_train.columns]
