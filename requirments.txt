@@ -1,8 +1,9 @@
 pickle
 streamlit
-scikit-learn
+
 tensorflow
 requests
 streamlit_lottie
 pandas
 numpy
+scikit-learn
